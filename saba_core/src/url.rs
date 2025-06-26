@@ -193,10 +193,35 @@ mod tests {
     fn test_url_host_port_path_search_query() {
         let url = "http://example.com:8888/index.html?a=123&b=456".to_string();
         let parsed_url = Url::new(url).parse().unwrap();
-        assert_eq!(parsed_url.url, "http://example.com:8888/index.html?a=123&b=456");
+        assert_eq!(
+            parsed_url.url,
+            "http://example.com:8888/index.html?a=123&b=456"
+        );
         assert_eq!(parsed_url.host(), "example.com");
         assert_eq!(parsed_url.port(), "8888");
         assert_eq!(parsed_url.path(), "index.html");
         assert_eq!(parsed_url.search_part(), "a=123&b=456");
+    }
+
+    #[test]
+    fn test_no_scheme() {
+        let url = "example.com".to_string();
+        let result = Url::new(url).parse();
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Only HTTP scheme is supported.".to_string()
+        );
+    }
+
+    #[test]
+    fn test_unsupported_scheme() {
+        let url = "https://example.com:8888/index.html".to_string();
+        let result = Url::new(url).parse();
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Only HTTP scheme is supported.".to_string()
+        );
     }
 }
