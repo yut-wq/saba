@@ -140,3 +140,63 @@ impl Url {
         false
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_url_host() {
+        let url = "http://example.com".to_string();
+        let parsed_url = Url::new(url).parse().unwrap();
+        assert_eq!(parsed_url.url, "http://example.com");
+        assert_eq!(parsed_url.host(), "example.com");
+        assert_eq!(parsed_url.port(), "80");
+        assert_eq!(parsed_url.path(), "");
+        assert_eq!(parsed_url.search_part(), "");
+    }
+
+    #[test]
+    fn test_url_host_port() {
+        let url = "http://example.com:8888".to_string();
+        let parsed_url = Url::new(url).parse().unwrap();
+        assert_eq!(parsed_url.url, "http://example.com:8888");
+        assert_eq!(parsed_url.host(), "example.com");
+        assert_eq!(parsed_url.port(), "8888");
+        assert_eq!(parsed_url.path(), "");
+        assert_eq!(parsed_url.search_part(), "");
+    }
+
+    #[test]
+    fn test_url_host_port_path() {
+        let url = "http://example.com:8888/index.html".to_string();
+        let parsed_url = Url::new(url).parse().unwrap();
+        assert_eq!(parsed_url.url, "http://example.com:8888/index.html");
+        assert_eq!(parsed_url.host(), "example.com");
+        assert_eq!(parsed_url.port(), "8888");
+        assert_eq!(parsed_url.path(), "index.html");
+        assert_eq!(parsed_url.search_part(), "");
+    }
+
+    #[test]
+    fn test_url_host_path() {
+        let url = "http://example.com/index.html".to_string();
+        let parsed_url = Url::new(url).parse().unwrap();
+        assert_eq!(parsed_url.url, "http://example.com/index.html");
+        assert_eq!(parsed_url.host(), "example.com");
+        assert_eq!(parsed_url.port(), "80");
+        assert_eq!(parsed_url.path(), "index.html");
+        assert_eq!(parsed_url.search_part(), "");
+    }
+
+    #[test]
+    fn test_url_host_port_path_search_query() {
+        let url = "http://example.com:8888/index.html?a=123&b=456".to_string();
+        let parsed_url = Url::new(url).parse().unwrap();
+        assert_eq!(parsed_url.url, "http://example.com:8888/index.html?a=123&b=456");
+        assert_eq!(parsed_url.host(), "example.com");
+        assert_eq!(parsed_url.port(), "8888");
+        assert_eq!(parsed_url.path(), "index.html");
+        assert_eq!(parsed_url.search_part(), "a=123&b=456");
+    }
+}
