@@ -23,6 +23,22 @@ impl Url {
         }
     }
 
+    pub fn host(&self) -> String {
+        self.host.clone()
+    }
+
+    pub fn port(&self) -> String {
+        self.port.clone()
+    }
+
+    pub fn path(&self) -> String {
+        self.path.clone()
+    }
+
+    pub fn search_part(&self) -> String {
+        self.search_part.clone()
+    }
+
     /// URLを解析する。
     ///
     /// サポートするスキームはHTTPのみ。
