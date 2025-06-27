@@ -1,3 +1,4 @@
+use crate::error::Error;
 use alloc::string::String;
 use alloc::vec::Vec;
 
