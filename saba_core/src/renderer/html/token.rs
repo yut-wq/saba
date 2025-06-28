@@ -39,3 +39,25 @@ pub enum HtmlToken {
     Char(char),
     EOF,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum State {
+    Data,
+    TagOpen,
+    EndTagOpen,
+    TagName,
+    BeforeAttributeName,
+    AttributeName,
+    AfterAttributeName,
+    BeforeAttributeValue,
+    AttributeValueDoubleQuoted,
+    AttributeValueSingleQuoted,
+    AttributeValueUnquoted,
+    AfterAttributeValueQuoted,
+    SelfClosingStartTag,
+    ScriptData,
+    ScriptDataLessThanSign,
+    ScriptDataEndTagOpen,
+    ScriptDataEndTagName,
+    TemporaryBuffer,
+}
