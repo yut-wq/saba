@@ -18,8 +18,10 @@ impl HtmlTokenizer {
         self.pos > self.input.len()
     }
 
-    fn consume_next_input(&self) -> char {
-        todo!()
+    fn consume_next_input(&mut self) -> char {
+        let c = self.input[self.pos];
+        self.pos += 1;
+        c
     }
 }
 
