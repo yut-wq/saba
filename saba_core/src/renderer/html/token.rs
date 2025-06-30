@@ -240,7 +240,24 @@ impl Iterator for HtmlTokenizer {
                     self.state = State::AfterAttributeName;
                     self.start_new_attribute();
                 }
-                State::BeforeAttributeValue => todo!(),
+                State::BeforeAttributeValue => {
+                    if c == ' ' {
+                        continue;
+                    }
+
+                    if c == '"' {
+                        self.state = State::AttributeValueDoubleQuoted;
+                        continue;
+                    }
+
+                    if c == '\'' {
+                        self.state = State::AttributeValueSingleQuoted;
+                        continue;
+                    }
+
+                    self.reconsume = true;
+                    self.state = State::AttributeValueUnquoted;
+                }
                 State::AttributeValueDoubleQuoted => todo!(),
                 State::AttributeValueSingleQuoted => todo!(),
                 State::AttributeValueUnquoted => todo!(),
