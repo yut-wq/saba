@@ -69,6 +69,26 @@ impl HtmlTokenizer {
 
         t
     }
+
+    fn append_attribute(&mut self, c: char, is_name: bool) {
+        assert!(self.latest_token.is_some());
+
+        if let Some(t) = self.latest_token.as_mut() {
+            match t {
+                HtmlToken::StartTag {
+                    ref mut attributes, ..
+                } => {
+                    let len = attributes.len();
+                    assert!(len > 0);
+
+                    attributes[len - 1].add_char(c, is_name);
+                }
+                _ => {
+                    panic!("`latest_token` should be either StartTag");
+                }
+            }
+        }
+    }
 }
 
 impl Iterator for HtmlTokenizer {
@@ -146,7 +166,24 @@ impl Iterator for HtmlTokenizer {
                     }
                     self.append_tag_name(c);
                 }
-                State::BeforeAttributeName => todo!(),
+                State::BeforeAttributeName => {
+                    if c == ' ' || c == '/' || c == '>' || self.is_eof() {
+                        self.reconsume = true;
+                        self.state = State::AfterAttributeName;
+                        continue;
+                    }
+
+                    if c == '=' {
+                        self.state = State::BeforeAttributeValue;
+                        continue;
+                    }
+
+                    if c.is_ascii_uppercase() {
+                        self.append_attribute(c.to_ascii_lowercase(), true)
+                    }
+
+                    self.append_attribute(c, true);
+                }
                 State::AttributeName => todo!(),
                 State::AfterAttributeName => todo!(),
                 State::BeforeAttributeValue => todo!(),
