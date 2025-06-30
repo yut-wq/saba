@@ -89,6 +89,23 @@ impl HtmlTokenizer {
             }
         }
     }
+
+    fn start_new_attribute(&mut self) {
+        assert!(self.latest_token.is_some());
+
+        if let Some(t) = self.latest_token.as_mut() {
+            match t {
+                HtmlToken::StartTag {
+                    ref mut attributes, ..
+                } => {
+                    attributes.push(Attribute::new());
+                }
+                _ => {
+                    panic!("`latest_token` should be either StartTag");
+                }
+            }
+        }
+    }
 }
 
 impl Iterator for HtmlTokenizer {
@@ -167,6 +184,17 @@ impl Iterator for HtmlTokenizer {
                     self.append_tag_name(c);
                 }
                 State::BeforeAttributeName => {
+                    if c == '/' || c == '>' || self.is_eof() {
+                        self.reconsume = true;
+                        self.state = State::AfterAttributeName;
+                        continue;
+                    }
+
+                    self.reconsume = true;
+                    self.state = State::AttributeName;
+                    self.start_new_attribute();
+                }
+                State::AttributeName => {
                     if c == ' ' || c == '/' || c == '>' || self.is_eof() {
                         self.reconsume = true;
                         self.state = State::AfterAttributeName;
@@ -184,8 +212,34 @@ impl Iterator for HtmlTokenizer {
 
                     self.append_attribute(c, true);
                 }
-                State::AttributeName => todo!(),
-                State::AfterAttributeName => todo!(),
+                State::AfterAttributeName => {
+                    if c == ' ' {
+                        continue;
+                    }
+
+                    if c == '/' {
+                        self.state = State::SelfClosingStartTag;
+                        continue;
+                    }
+
+                    if c == '=' {
+                        self.state = State::BeforeAttributeValue;
+                        continue;
+                    }
+
+                    if c == '>' {
+                        self.state = State::Data;
+                        return self.take_latest_token();
+                    }
+
+                    if self.is_eof() {
+                        return Some(HtmlToken::EOF);
+                    }
+
+                    self.reconsume = true;
+                    self.state = State::AfterAttributeName;
+                    self.start_new_attribute();
+                }
                 State::BeforeAttributeValue => todo!(),
                 State::AttributeValueDoubleQuoted => todo!(),
                 State::AttributeValueSingleQuoted => todo!(),
