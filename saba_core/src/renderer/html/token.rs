@@ -258,7 +258,17 @@ impl Iterator for HtmlTokenizer {
                     self.reconsume = true;
                     self.state = State::AttributeValueUnquoted;
                 }
-                State::AttributeValueDoubleQuoted => todo!(),
+                State::AttributeValueDoubleQuoted => {
+                    if c == '"' {
+                        self.state = State::AfterAttributeValueQuoted;
+                        continue;
+                    }
+
+                    if self.is_eof() {
+                        return Some(HtmlToken::EOF);
+                    }
+                    self.append_attribute(c, false);
+                }
                 State::AttributeValueSingleQuoted => todo!(),
                 State::AttributeValueUnquoted => todo!(),
                 State::AfterAttributeValueQuoted => todo!(),
