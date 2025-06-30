@@ -297,7 +297,18 @@ impl Iterator for HtmlTokenizer {
 
                     self.append_attribute(c, false);
                 }
-                State::AfterAttributeValueQuoted => todo!(),
+                State::AfterAttributeValueQuoted => {
+                    if c == '\'' {
+                        self.state = State::AfterAttributeValueQuoted;
+                        continue;
+                    }
+
+                    if self.is_eof() {
+                        return Some(HtmlToken::EOF);
+                    }
+
+                    self.append_attribute(c, false);
+                }
                 State::SelfClosingStartTag => todo!(),
                 State::ScriptData => todo!(),
                 State::ScriptDataLessThanSign => todo!(),
