@@ -106,6 +106,24 @@ impl HtmlTokenizer {
             }
         }
     }
+
+    fn set_self_closing_flag(&mut self) {
+        assert!(self.latest_token.is_some());
+
+        if let Some(t) = self.latest_token.as_mut() {
+            match t {
+                HtmlToken::StartTag {
+                    ref mut self_closing,
+                    ..
+                } => {
+                    *self_closing = true;
+                }
+                _ => {
+                    panic!("`latest_token` should be StartTag");
+                }
+            }
+        }
+    }
 }
 
 impl Iterator for HtmlTokenizer {
@@ -320,7 +338,17 @@ impl Iterator for HtmlTokenizer {
                     self.reconsume = true;
                     self.state = State::BeforeAttributeName;
                 }
-                State::SelfClosingStartTag => todo!(),
+                State::SelfClosingStartTag => {
+                    if c == '>' {
+                        self.set_self_closing_flag();
+                        self.state = State::Data;
+                        return self.take_latest_token();
+                    }
+
+                    if self.is_eof() {
+                        return Some(HtmlToken::EOF);
+                    }
+                }
                 State::ScriptData => todo!(),
                 State::ScriptDataLessThanSign => todo!(),
                 State::ScriptDataEndTagOpen => todo!(),
