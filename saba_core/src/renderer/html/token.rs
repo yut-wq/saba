@@ -349,7 +349,18 @@ impl Iterator for HtmlTokenizer {
                         return Some(HtmlToken::EOF);
                     }
                 }
-                State::ScriptData => todo!(),
+                State::ScriptData => {
+                    if c == '<' {
+                        self.state = State::ScriptDataLessThanSign;
+                        continue;
+                    }
+
+                    if self.is_eof() {
+                        return Some(HtmlToken::EOF);
+                    }
+
+                    return Some(HtmlToken::Char(c));
+                }
                 State::ScriptDataLessThanSign => todo!(),
                 State::ScriptDataEndTagOpen => todo!(),
                 State::ScriptDataEndTagName => todo!(),
