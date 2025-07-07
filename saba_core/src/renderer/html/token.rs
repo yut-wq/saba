@@ -547,4 +547,21 @@ mod tests {
             assert_eq!(Some(e), tokenizer.next());
         }
     }
+
+    #[test]
+    fn test_self_closing_tag() {
+        let html = "<img />".to_string();
+        let mut tokenizer = HtmlTokenizer::new(html);
+
+        assert_eq!(
+            HtmlToken::StartTag {
+                tag: "img".to_string(),
+                self_closing: true,
+                attributes: vec![],
+            },
+            tokenizer.next().unwrap()
+        );
+
+        assert!(tokenizer.next().is_none());
+    }
 }
