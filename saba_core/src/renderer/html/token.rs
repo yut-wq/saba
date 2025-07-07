@@ -564,4 +564,35 @@ mod tests {
 
         assert!(tokenizer.next().is_none());
     }
+
+    #[test]
+    fn test_script_tag() {
+        let html = "<script>js code;</script>".to_string();
+        let mut tokenizer = HtmlTokenizer::new(html);
+
+        assert_eq!(
+            HtmlToken::StartTag {
+                tag: "script".to_string(),
+                self_closing: false,
+                attributes: vec![],
+            },
+            tokenizer.next().unwrap()
+        );
+        assert_eq!(HtmlToken::Char('j'), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char('s'), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char(' '), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char('c'), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char('o'), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char('d'), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char('e'), tokenizer.next().unwrap());
+        assert_eq!(HtmlToken::Char(';'), tokenizer.next().unwrap());
+        assert_eq!(
+            HtmlToken::EndTag {
+                tag: "script".to_string()
+            },
+            tokenizer.next().unwrap()
+        );
+
+        assert!(tokenizer.next().is_none());
+    }
 }
