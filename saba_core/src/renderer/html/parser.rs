@@ -1,6 +1,6 @@
 use crate::renderer::{
     dom::node::{Node, Window},
-    html::token::HtmlTokenizer,
+    html::token::{HtmlToken, HtmlTokenizer},
 };
 use alloc::{rc::Rc, vec::Vec};
 use core::cell::RefCell;
@@ -39,11 +39,20 @@ impl HtmlParser {
     }
 
     pub fn construct_tree(&mut self) -> Rc<RefCell<Window>> {
-        let mut token = self.next();
+        let mut token = self.t.next();
 
         while token.is_some() {
             match self.mode {
-                InsertionMode::Initial => {}
+                InsertionMode::Initial => {
+                    // DOCTYPEをサポートしない
+                    if let Some(HtmlToken::Char(_)) = token {
+                        token = self.t.next();
+                        continue;
+                    }
+                    
+                    self.mode = InsertionMode::BeforeHtml;
+                    continue;
+                }
                 InsertionMode::BeforeHtml => {}
                 InsertionMode::BeforeHead => {}
                 InsertionMode::InHead => {}
@@ -54,5 +63,7 @@ impl HtmlParser {
                 InsertionMode::AfterAfterBody => {}
             }
         }
+        
+        self.window.clone()
     }
 }
