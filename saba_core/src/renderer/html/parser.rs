@@ -49,11 +49,39 @@ impl HtmlParser {
                         token = self.t.next();
                         continue;
                     }
-                    
+
                     self.mode = InsertionMode::BeforeHtml;
                     continue;
                 }
-                InsertionMode::BeforeHtml => {}
+                InsertionMode::BeforeHtml => {
+                    match token {
+                        Some(HtmlToken::Char(c)) => {
+                            if c == ' ' || c == '\n' {
+                                token = self.t.next();
+                                continue;
+                            }
+                        }
+                        Some(HtmlToken::StartTag {
+                            ref tag,
+                            self_closing: _,
+                            ref attributes,
+                        }) => {
+                            if tag == "html" {
+                                self.insert_element(tag, attributes.to_vec());
+                                self.mode = InsertionMode::BeforeHead;
+                                token = self.t.next();
+                                continue;
+                            }
+                        }
+                        Some(HtmlToken::EOF) | None => {
+                            return self.window.clone();
+                        }
+                        _ => {}
+                    }
+                    self.insert_element("html", Vec::new());
+                    self.mode = InsertionMode::BeforeHead;
+                    continue;
+                }
                 InsertionMode::BeforeHead => {}
                 InsertionMode::InHead => {}
                 InsertionMode::AfterHead => {}
@@ -63,7 +91,7 @@ impl HtmlParser {
                 InsertionMode::AfterAfterBody => {}
             }
         }
-        
+
         self.window.clone()
     }
 }
