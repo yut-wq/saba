@@ -1,8 +1,11 @@
 use crate::renderer::{
-    dom::node::{Node, Window},
-    html::token::{HtmlToken, HtmlTokenizer},
+    dom::node::{Element, ElementKind, Node, NodeKind, Window},
+    html::{
+        attribute::Attribute,
+        token::{HtmlToken, HtmlTokenizer},
+    },
 };
-use alloc::{rc::Rc, vec::Vec};
+use alloc::{rc::Rc, string::String, vec::Vec};
 use core::cell::RefCell;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -121,5 +124,10 @@ impl HtmlParser {
         }
 
         self.window.clone()
+    }
+
+    /// 要素をDOMツリーに挿入する仮実装
+    fn insert_element(&mut self, tag_name: &str, attributes: Vec<Attribute>) {
+        todo!()
     }
 }
