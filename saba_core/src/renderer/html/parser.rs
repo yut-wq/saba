@@ -6,7 +6,7 @@ use crate::renderer::{
     },
 };
 use alloc::{rc::Rc, string::String, vec::Vec};
-use core::cell::RefCell;
+use core::{cell::RefCell, str::FromStr};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum InsertionMode {
@@ -114,7 +114,55 @@ impl HtmlParser {
                     self.mode = InsertionMode::InHead;
                     continue;
                 }
-                InsertionMode::InHead => {}
+                InsertionMode::InHead => {
+                    match token {
+                        Some(HtmlToken::Char(c)) => {
+                            if c == ' ' || c == '\n' {
+                                self.insert_char(c);
+                                token = self.t.next();
+                                continue;
+                            }
+                        }
+                        Some(HtmlToken::StartTag {
+                            ref tag,
+                            self_closing,
+                            ref attributes,
+                        }) => {
+                            if tag == "style" || tag == "script" {
+                                self.insert_element(tag, attributes.to_vec());
+                                self.original_insertion_mode = self.mode;
+                                self.mode = InsertionMode::Text;
+                                token = self.t.next();
+                                continue;
+                            }
+                            // <head>が省略されているHTMLで無限ループが発生するのを防ぐ。
+                            if tag == "body" {
+                                self.pop_until(ElementKind::Head);
+                                self.mode = InsertionMode::AfterHead;
+                                continue;
+                            }
+                            if let Ok(_element_kind) = ElementKind::from_str(tag) {
+                                self.pop_until(ElementKind::Head);
+                                self.mode = InsertionMode::AfterHead;
+                                continue;
+                            }
+                        }
+                        Some(HtmlToken::EndTag { ref tag }) => {
+                            if tag == "head" {
+                                self.mode = InsertionMode::AfterHead;
+                                token = self.t.next();
+                                self.pop_until(ElementKind::Head);
+                                continue;
+                            }
+                        }
+                        Some(HtmlToken::EOF) | None => {
+                            return self.window.clone();
+                        }
+                    }
+
+                    token = self.t.next();
+                    continue;
+                }
                 InsertionMode::AfterHead => {}
                 InsertionMode::InBody => {}
                 InsertionMode::Text => {}
@@ -128,6 +176,14 @@ impl HtmlParser {
 
     /// 要素をDOMツリーに挿入する仮実装
     fn insert_element(&mut self, tag_name: &str, attributes: Vec<Attribute>) {
+        todo!()
+    }
+
+    fn insert_char(&self, c: char) {
+        todo!()
+    }
+
+    fn pop_until(&self, head: ElementKind) {
         todo!()
     }
 }
